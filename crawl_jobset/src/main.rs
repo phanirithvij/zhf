@@ -39,21 +39,30 @@ async fn main() -> Result<()> {
         .ok_or_else(|| anyhow!("No evaluation table found"))?;
     let eval_rows = eval_table.find(Name("tr"));
     for row in eval_rows {
-        // Skip evals with unfinished builds
-        if row.find(Class("badge-secondary")).next().is_some() {
-            continue;
-        }
         // Skip fully failed evals (no builds)
         if row.find(Class("badge-success")).next().is_none() {
+            continue;
+        }
+        let evalno = row
+            .find(Name("a"))
+            .next()
+            .ok_or_else(|| anyhow!("No link found in row"))?
+            .text();
+
+        let mut path = std::env::current_dir()?;
+        path.push("data");
+        path.push("evalcache");
+        path.push(format!("{evalno}.cache"));
+
+        // Skip evals with unfinished builds - unless we have already cached it.
+        // In this case, a build was likely restarted.
+        if row.find(Class("badge-secondary")).next().is_some() && !std::fs::exists(path)? {
             continue;
         }
 
         println!(
             "{} {}",
-            row.find(Name("a"))
-                .next()
-                .ok_or_else(|| anyhow!("No link found in row"))?
-                .text(),
+            evalno,
             row.find(Name("time"))
                 .next()
                 .ok_or_else(|| anyhow!("No time found"))?
