@@ -13,7 +13,7 @@ fi
 runRust() {
 	bin="${1}"
 	shift
-	RUST_LOG=info nix-shell -p openssl pkg-config --run "cargo r --bin ${bin} --quiet --release -- ${*}"
+	RUST_LOG=info nix-shell -p cargo rustc openssl pkg-config --run "cargo r --bin ${bin} --quiet --release -- ${*}"
 }
 
 # Gather data
