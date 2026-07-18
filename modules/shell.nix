@@ -8,9 +8,7 @@
         rustc
         openssl
         pkg-config
-        python3
-        python3Packages.gitpython
-        python3Packages.multiprocess
+        (python3.withPackages (p: with p; [ gitpython multiprocess ]))
         config.treefmt.build.wrapper
       ];
       commands = [

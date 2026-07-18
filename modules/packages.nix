@@ -17,7 +17,7 @@
         # create wrappers for the python scripts
         for script in fetch-maintainers.py filter-maintainers.py; do
           wrapProgram $out/scripts/$script \
-            --prefix PATH : ${pkgs.lib.makeBinPath [ pkgs.python3 pkgs.python3Packages.gitpython pkgs.python3Packages.multiprocess ]}
+            --prefix PATH : ${pkgs.lib.makeBinPath [ (pkgs.python3.withPackages (p: with p; [ gitpython multiprocess ])) ]}
           ln -s $out/scripts/$script $out/bin/$script
         done
         wrapProgram $out/scripts/render-page.sh \
