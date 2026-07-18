@@ -87,6 +87,9 @@ if ! [ -f "data/failcache/${evalIds[*]}.cache" ]; then
     if [[ ${system} == "AAAAAASomeThingsFailToEvaluate" ]]; then
       continue
     fi
+    if [[ ! ${system} =~ "-linux" ]] && [[ ! ${system} =~ "-darwin" ]] && [[ ${system} != "unknown-system" ]]; then
+      system="unknown-system"
+    fi
     if [ -v systems["${system}"] ]; then
       systems["${system}"]=$((systems[$system] + 1))
     else
@@ -229,16 +232,16 @@ done <<<"${lines}"
 # Render page
 cp -r page/* "${outputDir}/"
 sed -i \
-  -e "s/@targetbranch@/${targetBranch}/g" \
-  -e "s/@lastlinuxevalno@/${lastLinuxEvalNo}/g" \
-  -e "s/@lastlinuxevaltime@/${lastLinuxEvalTime}/g" \
-  -e "s/@lastdarwinevalno@/${lastDarwinEvalNo}/g" \
-  -e "s/@lastdarwinevaltime@/${lastDarwinEvalTime}/g" \
-  -e "s/@totalbuildfailures@/${totalBuildFailures}/g" \
-  -e "s/@linuxburndown@/${linuxBurndown}/g" \
-  -e "s/@darwinburndown@/${darwinBurndown}/g" \
-  -e "s/@lastcheck@/${lastCheck}/g" \
-  -e "s/@triggered@/${triggeredBy}/g" \
+  -e "s|@targetbranch@|${targetBranch}|g" \
+  -e "s|@lastlinuxevalno@|${lastLinuxEvalNo}|g" \
+  -e "s|@lastlinuxevaltime@|${lastLinuxEvalTime}|g" \
+  -e "s|@lastdarwinevalno@|${lastDarwinEvalNo}|g" \
+  -e "s|@lastdarwinevaltime@|${lastDarwinEvalTime}|g" \
+  -e "s|@totalbuildfailures@|${totalBuildFailures}|g" \
+  -e "s|@linuxburndown@|${linuxBurndown}|g" \
+  -e "s|@darwinburndown@|${darwinBurndown}|g" \
+  -e "s|@lastcheck@|${lastCheck}|g" \
+  -e "s|@triggered@|${triggeredBy}|g" \
   "${outputDir}/index.html"
 
 echo "${stagingMerges}" | sed -i -e '/@stagingMerges@/{

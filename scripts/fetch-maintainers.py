@@ -31,8 +31,12 @@ def clone_nixpkgs(rev, nixos):
 
 
 def batch_evaluate(jobs, is_nixos):
-    file_to_evaluate = "./data/nixpkgs/nixos/release-combined.nix" if is_nixos else "./data/nixpkgs/pkgs/top-level/release.nix"
-    expr = f"let jobs = import {file_to_evaluate}; in {{\n"
+    file_to_evaluate = (
+        "./data/nixpkgs/nixos/release-combined.nix"
+        if is_nixos
+        else "./data/nixpkgs/pkgs/top-level/release.nix"
+    )
+    expr = f"let jobs = import {file_to_evaluate} {{}}; in {{\n"
     for job_name in jobs:
         real_job_name = job_name if is_nixos else ".".join(job_name.split(".")[1:])
         path_expr = ".".join(f'"{p}"' for p in real_job_name.split("."))
@@ -41,7 +45,9 @@ def batch_evaluate(jobs, is_nixos):
     with open("batch.nix", "w") as f:
         f.write(expr)
     try:
-        r = subprocess.check_output("nix eval --json -f batch.nix 2> /dev/null", shell=True).decode("utf-8")
+        r = subprocess.check_output(
+            "nix eval --json -f batch.nix 2> /dev/null", shell=True
+        ).decode("utf-8")
         return json.loads(r)
     except Exception as e:
         print(f"Batch evaluation failed: {e}")
@@ -51,11 +57,11 @@ def batch_evaluate(jobs, is_nixos):
 def main(evals):
     for ev in evals:
         eval_id, commit_hash, is_nixos = ev
-        
+
         # Determine paths
         evalcache_path = f"data/evalcache/{eval_id}.cache"
         maintainerscache_path = f"data/maintainerscache/{eval_id}.cache"
-        
+
         if not os.path.exists(evalcache_path):
             continue
 
@@ -64,7 +70,7 @@ def main(evals):
             continue
 
         clone_nixpkgs(commit_hash, is_nixos)
-        
+
         jobs_info = {}
         with open(evalcache_path) as f:
             for line in f.readlines():
@@ -74,7 +80,7 @@ def main(evals):
                     if not is_nixos:
                         job_name = f"nixpkgs.{job_name}"
                     jobs_info[job_name] = status[1:]
-        
+
         jobs_to_eval = list(jobs_info.keys())
         if not jobs_to_eval:
             Path(maintainerscache_path).touch()
@@ -84,8 +90,10 @@ def main(evals):
         # Batch in chunks of 500
         chunk_size = 500
         for i in range(0, len(jobs_to_eval), chunk_size):
-            chunk = jobs_to_eval[i:i+chunk_size]
-            print(f"Evaluating batch {i//chunk_size + 1}/{(len(jobs_to_eval) + chunk_size - 1)//chunk_size}...")
+            chunk = jobs_to_eval[i : i + chunk_size]
+            print(
+                f"Evaluating batch {i//chunk_size + 1}/{(len(jobs_to_eval) + chunk_size - 1)//chunk_size}..."
+            )
             batch_res = batch_evaluate(chunk, is_nixos)
             for k, v in batch_res.items():
                 maintainers = v.get("maintainers", [])
@@ -94,7 +102,7 @@ def main(evals):
                     if "shortName" in t:
                         maintainers.append({"github": "team_" + t["shortName"].lower()})
                 res[k] = maintainers
-            
+
             # If batch failed completely, mark as error
             if not batch_res:
                 for k in chunk:
