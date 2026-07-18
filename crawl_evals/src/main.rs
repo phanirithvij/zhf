@@ -138,6 +138,34 @@ async fn main() -> Result<()> {
                 }
             }
         }
+
+        let errors_res = http_client
+            .get(format!(
+                "https://hydra.nixos.org/eval/{eval_id}/errors?full=1"
+            ))
+            .send()
+            .await;
+        if let Ok(errors_res) = errors_res {
+            if let Ok(errors_res) = errors_res.error_for_status() {
+                if let Ok(errors_text) = errors_res.text().await {
+                    for line in errors_text.lines() {
+                        let line = line.trim();
+                        if line.starts_with("in job ‘") && line.ends_with("’:") {
+                            let attr_name = &line["in job ‘".len()..line.len() - 2];
+                            let mut parts = attr_name.rsplitn(2, '.');
+                            let arch = parts.next().unwrap_or("unknown");
+                            if eval_nixos || allowed_arch_nixpkgs.contains(&arch) {
+                                builds.insert(
+                                    attr_name.to_string(),
+                                    format!("0 {} {} EvalFailed", attr_name, arch),
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         let mut out = File::create(cache_file)?;
 
         let mut attrs: Vec<_> = builds.keys().collect();
