@@ -45,7 +45,9 @@ read -r lastDarwinEvalNo lastDarwinEvalTime <<<"$(
 lastCheck="$(date --utc '+%Y-%m-%d %H:%M:%S (UTC)')"
 triggeredBy="${CI_PIPELINE_SOURCE:-???}"
 
-evalIds=("1827190" "1827241")
+evalIdsUnsorted=("${lastLinuxEvalNo}" "${lastDarwinEvalNo}")
+IFS=$'\n' evalIds=($(sort <<<"${evalIdsUnsorted[*]}"))
+unset IFS
 
 echo "Evaluations are ${evalIds[*]}"
 
