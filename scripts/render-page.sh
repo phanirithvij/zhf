@@ -87,8 +87,8 @@ if ! [ -f "data/failcache/${evalIds[*]}.cache" ]; then
     if [[ ${system} == "AAAAAASomeThingsFailToEvaluate" ]]; then
       continue
     fi
-    if [[ ! ${system} =~ "-linux" ]] && [[ ! ${system} =~ "-darwin" ]] && [[ ${system} != "unknown-system" ]]; then
-      system="unknown-system"
+    if [[ ! ${system} =~ "-linux" ]] && [[ ! ${system} =~ "-darwin" ]]; then
+      continue
     fi
     if [ -v systems["${system}"] ]; then
       systems["${system}"]=$((systems[$system] + 1))
