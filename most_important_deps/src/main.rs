@@ -143,67 +143,6 @@ async fn main() -> Result<()> {
 
     // Clean cache
     log::info!("Cleaning cache");
-    for path in std::fs::read_dir(most_important_dir)? {
-        let path = path?;
-        // Ignore none-cache entries
-        if !path
-            .file_name()
-            .to_str()
-            .ok_or_else(|| anyhow!("Cache entry has no filename"))?
-            .ends_with(".cache")
-        {
-            continue;
-        }
-        // Ignore entries we know about
-        let id = if let Ok(id) = path
-            .file_name()
-            .to_str()
-            .ok_or_else(|| anyhow!("Cache entry has no filename"))?
-            .strip_suffix(".cache")
-            .ok_or_else(|| anyhow!("Cache entry lost its suffix"))?
-            .parse::<u64>()
-        {
-            id
-        } else {
-            // Invalid entry
-            continue;
-        };
-        if !argv.contains(&id) {
-            log::info!("Purging cache of eval {id}");
-            std::fs::remove_file(path.path())?;
-        }
-    }
-
-    for path in std::fs::read_dir(depdir)? {
-        let path = path?;
-        // Ignore none-cache entries
-        if !path
-            .file_name()
-            .to_str()
-            .ok_or_else(|| anyhow!("Cache entry has no filename"))?
-            .ends_with(".cache")
-        {
-            continue;
-        }
-        // Ignore entries we know about
-        let id = if let Ok(id) = path
-            .file_name()
-            .to_str()
-            .ok_or_else(|| anyhow!("Cache entry has no filename"))?
-            .strip_suffix(".cache")
-            .ok_or_else(|| anyhow!("Cache entry lost its suffix"))?
-            .parse::<u64>()
-        {
-            id
-        } else {
-            // Invalid entry
-            continue;
-        };
-        if !argv.contains(&id) {
-            log::info!("Purging cache of eval {id}");
-            std::fs::remove_file(path.path())?;
-        }
-    }
 
     Ok(())
 }
