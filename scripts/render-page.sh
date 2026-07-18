@@ -233,7 +233,6 @@ sed -i \
   -e "s/@lastdarwinevalno@/${lastDarwinEvalNo}/g" \
   -e "s/@lastdarwinevaltime@/${lastDarwinEvalTime}/g" \
   -e "s/@totalbuildfailures@/${totalBuildFailures}/g" \
-  -e "s @failingbuildstable@ ${failingBuildsTable} g" \
   -e "s/@linuxburndown@/${linuxBurndown}/g" \
   -e "s/@darwinburndown@/${darwinBurndown}/g" \
   -e "s/@lastcheck@/${lastCheck}/g" \
@@ -241,6 +240,11 @@ sed -i \
   "${outputDir}/index.html"
 
 echo "${stagingMerges}" | sed -i -e '/@stagingMerges@/{
+r /dev/stdin
+d
+}' "${outputDir}/index.html"
+
+echo "${failingBuildsTable}" | sed -i -e '/@failingbuildstable@/{
 r /dev/stdin
 d
 }' "${outputDir}/index.html"
