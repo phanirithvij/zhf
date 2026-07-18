@@ -171,7 +171,14 @@ args=()
 if [ ! -e "data/maintainerscache/${lastLinuxEvalNo}.cache" ] || [ ! -e "data/maintainerscache/${lastDarwinEvalNo}.cache" ]; then
   for evaluation in "${evalIds[@]}"; do
     if ! [ -f "data/maintainerscache/${evaluation}.cache" ]; then
-      nixpkgsCommit="$(curl -fsH 'Accept: application/json' "https://hydra.nixos.org/eval/${evaluation}" | jq -r .jobsetevalinputs.nixpkgs.revision)"
+      nixpkgsCommit=""
+      while [ -z "${nixpkgsCommit}" ] || [ "${nixpkgsCommit}" == "null" ]; do
+        nixpkgsCommit="$(curl -sH 'Accept: application/json' "https://hydra.nixos.org/eval/${evaluation}" | jq -r .jobsetevalinputs.nixpkgs.revision || true)"
+        if [ -z "${nixpkgsCommit}" ] || [ "${nixpkgsCommit}" == "null" ]; then
+          echo "Retrying fetch for eval ${evaluation}..."
+          sleep 5
+        fi
+      done
       args+=("${evaluation}" "${nixpkgsCommit}")
       if [[ ${evaluation} == "${lastDarwinEvalNo}" ]]; then
         args+=(0)
