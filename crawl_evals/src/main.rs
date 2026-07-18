@@ -133,6 +133,10 @@ async fn main() -> Result<()> {
                     continue;
                 };
 
+                if attr_name == "AAAAAASomeThingsFailToEvaluate" {
+                    continue;
+                }
+
                 if eval_nixos || allowed_arch_nixpkgs.contains(&arch.as_str()) {
                     builds.insert(attr_name, format!("{build_id} {pkg_name} {arch} {status}"));
                 }
@@ -155,8 +159,15 @@ async fn main() -> Result<()> {
                                 .strip_prefix("in job ‘")
                                 .and_then(|s| s.strip_suffix("’:"))
                             {
+                                if attr_name == "AAAAAASomeThingsFailToEvaluate" {
+                                    continue;
+                                }
                                 let mut parts = attr_name.rsplitn(2, '.');
-                                let arch = parts.next().unwrap_or("unknown");
+                                let mut arch = parts.next().unwrap_or("unknown");
+                                let valid_archs = ["x86_64-linux", "aarch64-linux", "x86_64-darwin", "aarch64-darwin", "i686-linux"];
+                                if !valid_archs.contains(&arch) {
+                                    arch = "unknown-system";
+                                }
                                 if eval_nixos || allowed_arch_nixpkgs.contains(&arch) {
                                     builds.insert(
                                         attr_name.to_string(),

@@ -81,8 +81,10 @@ if ! [ -f "data/failcache/${evalIds[*]}.cache" ]; then
       continue
     fi
     read -r _ _ system result <<<"${val}"
-    # Ignore cancelled jobs so cancelling an eval doesn't spike the graph
     if [[ ${result} == Succeeded ]] || [[ ${result} == Cancelled ]]; then
+      continue
+    fi
+    if [[ ${system} == "AAAAAASomeThingsFailToEvaluate" ]]; then
       continue
     fi
     if [ -v systems["${system}"] ]; then
