@@ -130,14 +130,14 @@ async fn main() -> Result<()> {
             cache_loc.push(format!("{eval_id}.cache.new"));
             let mut final_cache_loc = most_important_dir.clone();
             final_cache_loc.push(format!("{eval_id}.cache"));
-            std::fs::rename(cache_loc, final_cache_loc)?;
+            std::fs::rename(&cache_loc, &final_cache_loc).map_err(|e| anyhow::anyhow!("Failed to rename {:?} to {:?}: {}", cache_loc, final_cache_loc, e))?;
 
             // Move the other file to final destination
             let mut dep_cache_loc = depdir.clone();
             dep_cache_loc.push(format!("{eval_id}.cache.new"));
             let mut final_cache_loc = depdir.clone();
             final_cache_loc.push(format!("{eval_id}.cache"));
-            std::fs::rename(dep_cache_loc, final_cache_loc)?;
+            std::fs::rename(&dep_cache_loc, &final_cache_loc).map_err(|e| anyhow::anyhow!("Failed to rename {:?} to {:?}: {}", dep_cache_loc, final_cache_loc, e))?;
         }
     }
 
