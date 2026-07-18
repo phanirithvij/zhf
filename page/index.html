@@ -1,51 +1,96 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <title>ZHF</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css" />
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
     <meta property="og:title" content="ZERO Hydra Failures" />
-    <meta property="og:description" content="Website to track the number of failing builds on hydra.nixos.org" />
+    <meta
+      property="og:description"
+      content="Website to track the number of failing builds on hydra.nixos.org"
+    />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://zh.fail" />
     <meta property="og:image" content="/icon.png" />
   </head>
   <body>
-    <h1><img src="nix-snowflake.svg">ZERO Hydra Failures</h1>
+    <h1><img src="nix-snowflake.svg" />ZERO Hydra Failures</h1>
     <table class="compact">
       <tbody class="no-stripes">
-        <tr><td>Current target:</td><td><b>@targetbranch@</b></td></tr>
-        <tr><td>Last check:</td><td><b>@lastcheck@</b> (Triggered by @triggered@)</td></tr>
-        <tr><td>Next check:</td><td><a href="https://git.helsinki.tools/janne.hess/zhf/-/commits/master"><img alt="pipeline status" src="https://git.helsinki.tools/janne.hess/zhf/badges/master/pipeline.svg" /></a></td></tr>
+        <tr>
+          <td>Current target:</td>
+          <td><b>@targetbranch@</b></td>
+        </tr>
+        <tr>
+          <td>Last check:</td>
+          <td><b>@lastcheck@</b> (Triggered by @triggered@)</td>
+        </tr>
+        <tr>
+          <td>Next check:</td>
+          <td>
+            <a href="https://git.helsinki.tools/janne.hess/zhf/-/commits/master"
+              ><img
+                alt="pipeline status"
+                src="https://git.helsinki.tools/janne.hess/zhf/badges/master/pipeline.svg"
+            /></a>
+          </td>
+        </tr>
         <tr></tr>
-        <tr><td>Latest Linux evaluation (completely built):</td><td><a href="https://hydra.nixos.org/eval/@lastlinuxevalno@"><b>@lastlinuxevalno@</b></a> on <b>@lastlinuxevaltime@</b></td></tr>
-        <tr><td>Latest Darwin evaluation (completely built):</td><td><a href="https://hydra.nixos.org/eval/@lastdarwinevalno@"><b>@lastdarwinevalno@</b></a> on <b>@lastdarwinevaltime@</b></td></tr>
+        <tr>
+          <td>Latest Linux evaluation (completely built):</td>
+          <td>
+            <a href="https://hydra.nixos.org/eval/@lastlinuxevalno@"
+              ><b>@lastlinuxevalno@</b></a
+            >
+            on <b>@lastlinuxevaltime@</b>
+          </td>
+        </tr>
+        <tr>
+          <td>Latest Darwin evaluation (completely built):</td>
+          <td>
+            <a href="https://hydra.nixos.org/eval/@lastdarwinevalno@"
+              ><b>@lastdarwinevalno@</b></a
+            >
+            on <b>@lastdarwinevaltime@</b>
+          </td>
+        </tr>
         <tr></tr>
         @failingbuildstable@
-        <tr><td>Total failed builds</td><td><b>@totalbuildfailures@</b></td></tr>
+        <tr>
+          <td>Total failed builds</td>
+          <td><b>@totalbuildfailures@</b></td>
+        </tr>
       </tbody>
     </table>
     <div id="burndown-container">
       <canvas id="burndown"></canvas>
     </div>
-    <noscript>
-      JavaScript is requred for the burndown chart!
-    </noscript>
+    <noscript> JavaScript is requred for the burndown chart! </noscript>
     <h2 style="margin-bottom: 0">Failed builds</h2>
     <ul>
-      <li><a href="failed/by-maintainer/_.html">Failed without maintainer</a></li>
+      <li>
+        <a href="failed/by-maintainer/_.html">Failed without maintainer</a>
+      </li>
       <li><a href="failed/all.html">All failed builds</a></li>
       <li><a href="failed/overview.html">Failed by maintainer</a></li>
     </ul>
-    <h2 style="margin-bottom: 0; margin-top: 2em">Most problematic dependencies</h2>
+    <h2 style="margin-bottom: 0; margin-top: 2em">
+      Most problematic dependencies
+    </h2>
     <table>
-        <thead><tr><th>Job</th><th>Platform</th><th>Number of dependants</th></tr></thead>
-        <tbody>
-          @mostproblematicdeps@
-        </tbody>
+      <thead>
+        <tr>
+          <th>Job</th>
+          <th>Platform</th>
+          <th>Number of dependants</th>
+        </tr>
+      </thead>
+      <tbody>
+        @mostproblematicdeps@
+      </tbody>
     </table>
     <script src="js/chart-3.7.1.min.js"></script>
     <script src="js/luxon-2.min.js"></script>
@@ -53,173 +98,173 @@
     <script src="js/chartjs-plugin-annotatoin-1.4.0.min.js"></script>
     <script>
 
-      var data = {
-        datasets: [{
-            label: 'Linux Failures',
-            borderColor: '#4d6fb6',
-            backgroundColor: '#4d6fb6',
-            lineTension: 0,
-            data: [@linuxburndown@]
-        }, {
-            label: 'Darwin Failures',
-            borderColor: '#7eb6e1',
-            backgroundColor: '#7eb6e1',
-            lineTension: 0,
-            data: [@darwinburndown@]
-        }, {
-            label: 'Merges from staging-next to master',
-            borderColor: 'orange',
-            backgroundColor: 'orange',
-            data: []
-        }],
-      };
+            var data = {
+              datasets: [{
+                  label: 'Linux Failures',
+                  borderColor: '#4d6fb6',
+                  backgroundColor: '#4d6fb6',
+                  lineTension: 0,
+                  data: [@linuxburndown@]
+              }, {
+                  label: 'Darwin Failures',
+                  borderColor: '#7eb6e1',
+                  backgroundColor: '#7eb6e1',
+                  lineTension: 0,
+                  data: [@darwinburndown@]
+              }, {
+                  label: 'Merges from staging-next to master',
+                  borderColor: 'orange',
+                  backgroundColor: 'orange',
+                  data: []
+              }],
+            };
 
-      new Chart(document.getElementById('burndown'), {
-        type: 'line',
-        data: data,
-        options: {
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'nearest',
-            intersect: false
-          },
-          animation: {
-            duration: 0,
-          },
-          responsiveAnimationDuration: 0,
-          backgroundColor: 'rgb(255, 255, 255)',
-          scales: {
-            xAxis: {
-              type: 'time',
-              adapters: {
-                time: {
-                  zone: 'UTC',
+            new Chart(document.getElementById('burndown'), {
+              type: 'line',
+              data: data,
+              options: {
+                maintainAspectRatio: false,
+                interaction: {
+                  mode: 'nearest',
+                  intersect: false
                 },
-              },
-              grid: {
-                color: Chart.defaults.borderColor
-              },
-              ticks: {
-                color: Chart.defaults.color
-              },
-              distribution: 'series',
-              min: new Date(new Date().setDate(new Date().getDate()-14)), // 14 days ago
-              suggestedMax: '2024-12-01T00:00:00'
-            },
-            yAxis: {
-              ticks: {
-                min: 0,
-                color: Chart.defaults.color
-              },
-              grid: {
-                color: Chart.defaults.borderColor
-              },
-              min: 0
-            }
-          },
-          plugins: {
-            autocolors: false,
-            legend: {
-              display: true,
-              position: 'bottom',
-              color: Chart.defaults.color
-            },
-            annotation: {
-              annotations: {
-                today: {
-                  type: 'line',
-                  value: new Date(),
-                  borderColor: 'red',
-                  borderWidth: 2,
-                  scaleID: 'xAxis',
-                  label: {
-                    enabled: true,
-                    content: 'Now',
-                    position: 'end'
+                animation: {
+                  duration: 0,
+                },
+                responsiveAnimationDuration: 0,
+                backgroundColor: 'rgb(255, 255, 255)',
+                scales: {
+                  xAxis: {
+                    type: 'time',
+                    adapters: {
+                      time: {
+                        zone: 'UTC',
+                      },
+                    },
+                    grid: {
+                      color: Chart.defaults.borderColor
+                    },
+                    ticks: {
+                      color: Chart.defaults.color
+                    },
+                    distribution: 'series',
+                    min: new Date(new Date().setDate(new Date().getDate()-14)), // 14 days ago
+                    suggestedMax: '2024-12-01T00:00:00'
+                  },
+                  yAxis: {
+                    ticks: {
+                      min: 0,
+                      color: Chart.defaults.color
+                    },
+                    grid: {
+                      color: Chart.defaults.borderColor
+                    },
+                    min: 0
                   }
                 },
-                featurefreeze: {
-                  type: 'line',
-                  value: '2024-10-25T00:00:00',
-                  borderColor: 'green',
-                  borderWidth: 2,
-                  borderDash: [5,5],
-                  scaleID: 'xAxis',
-                  label: {
-                    enabled: true,
-                    content: 'Feature Freeze',
-                    position: 'start'
-                  }
-                },
-                zhf: {
-                  type: 'line',
-                  value: '2024-10-30T00:00:00',
-                  borderColor: 'green',
-                  borderWidth: 2,
-                  borderDash: [5,5],
-                  scaleID: 'xAxis',
-                  label: {
-                    enabled: true,
-                    content: 'ZHF',
-                    position: 'start'
-                  }
-                },
-                branchoff: {
-                  type: 'line',
-                  value: '2024-11-14T00:00:00',
-                  borderColor: 'green',
-                  borderWidth: 2,
-                  borderDash: [5,5],
-                  scaleID: 'xAxis',
-                  label: {
-                    enabled: true,
-                    content: 'Branch-off',
-                    position: 'start'
-                  }
-                },
-                release: {
-                  type: 'line',
-                  value: '2024-11-22T00:00:00',
-                  borderColor: 'green',
-                  borderWidth: 2,
-                  borderDash: [5,5],
-                  scaleID: 'xAxis',
-                  label: {
-                    enabled: true,
-                    content: 'Release',
-                    position: 'start',
+                plugins: {
+                  autocolors: false,
+                  legend: {
+                    display: true,
+                    position: 'bottom',
+                    color: Chart.defaults.color
+                  },
+                  annotation: {
+                    annotations: {
+                      today: {
+                        type: 'line',
+                        value: new Date(),
+                        borderColor: 'red',
+                        borderWidth: 2,
+                        scaleID: 'xAxis',
+                        label: {
+                          enabled: true,
+                          content: 'Now',
+                          position: 'end'
+                        }
+                      },
+                      featurefreeze: {
+                        type: 'line',
+                        value: '2024-10-25T00:00:00',
+                        borderColor: 'green',
+                        borderWidth: 2,
+                        borderDash: [5,5],
+                        scaleID: 'xAxis',
+                        label: {
+                          enabled: true,
+                          content: 'Feature Freeze',
+                          position: 'start'
+                        }
+                      },
+                      zhf: {
+                        type: 'line',
+                        value: '2024-10-30T00:00:00',
+                        borderColor: 'green',
+                        borderWidth: 2,
+                        borderDash: [5,5],
+                        scaleID: 'xAxis',
+                        label: {
+                          enabled: true,
+                          content: 'ZHF',
+                          position: 'start'
+                        }
+                      },
+                      branchoff: {
+                        type: 'line',
+                        value: '2024-11-14T00:00:00',
+                        borderColor: 'green',
+                        borderWidth: 2,
+                        borderDash: [5,5],
+                        scaleID: 'xAxis',
+                        label: {
+                          enabled: true,
+                          content: 'Branch-off',
+                          position: 'start'
+                        }
+                      },
+                      release: {
+                        type: 'line',
+                        value: '2024-11-22T00:00:00',
+                        borderColor: 'green',
+                        borderWidth: 2,
+                        borderDash: [5,5],
+                        scaleID: 'xAxis',
+                        label: {
+                          enabled: true,
+                          content: 'Release',
+                          position: 'start',
+                        }
+                      }
+      @stagingMerges@
+                    }
                   }
                 }
-@stagingMerges@
               }
+            });
+
+            const colorSchemeQueryList = window.matchMedia('(prefers-color-scheme: dark)');
+            const setColorScheme = e => {
+              var chart = Chart.getChart("burndown");
+              if (e.matches) {
+                // Dark
+                chart.options.scales.xAxis.ticks.color = "#fefefe";
+                chart.options.scales.yAxis.ticks.color = "#fefefe";
+                chart.options.plugins.legend.labels.color = "#fefefe";
+                chart.options.scales.xAxis.grid.color = "rgba(255, 255, 255, .1)";
+                chart.options.scales.yAxis.grid.color = "rgba(255, 255, 255, .1)";
+              } else {
+                // Light
+                chart.options.scales.xAxis.ticks.color = Chart.defaults.color;
+                chart.options.scales.yAxis.ticks.color = Chart.defaults.color;
+                chart.options.plugins.legend.labels.color = Chart.defaults.color;
+                chart.options.scales.xAxis.grid.color = Chart.defaults.borderColor;
+                chart.options.scales.yAxis.grid.color = Chart.defaults.borderColor;
+              }
+              chart.update()
             }
-          }
-        }
-      });
 
-      const colorSchemeQueryList = window.matchMedia('(prefers-color-scheme: dark)');
-      const setColorScheme = e => {
-        var chart = Chart.getChart("burndown");
-        if (e.matches) {
-          // Dark
-          chart.options.scales.xAxis.ticks.color = "#fefefe";
-          chart.options.scales.yAxis.ticks.color = "#fefefe";
-          chart.options.plugins.legend.labels.color = "#fefefe";
-          chart.options.scales.xAxis.grid.color = "rgba(255, 255, 255, .1)";
-          chart.options.scales.yAxis.grid.color = "rgba(255, 255, 255, .1)";
-        } else {
-          // Light
-          chart.options.scales.xAxis.ticks.color = Chart.defaults.color;
-          chart.options.scales.yAxis.ticks.color = Chart.defaults.color;
-          chart.options.plugins.legend.labels.color = Chart.defaults.color;
-          chart.options.scales.xAxis.grid.color = Chart.defaults.borderColor;
-          chart.options.scales.yAxis.grid.color = Chart.defaults.borderColor;
-        }
-        chart.update()
-      }
-
-      setColorScheme(colorSchemeQueryList);
-      colorSchemeQueryList.addEventListener('change', setColorScheme);
+            setColorScheme(colorSchemeQueryList);
+            colorSchemeQueryList.addEventListener('change', setColorScheme);
     </script>
   </body>
 </html>

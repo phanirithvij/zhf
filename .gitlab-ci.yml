@@ -1,12 +1,12 @@
 pages:
   stage: deploy
   script:
-  - ln -s /var/lib/zhf data
-  - ./scripts/render-page.sh
+    - ln -s /var/lib/zhf data
+    - ./scripts/render-page.sh
   interruptible: true
   artifacts:
     paths:
-    - public
+      - public
     expire_in: 1 day
   rules:
     - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
