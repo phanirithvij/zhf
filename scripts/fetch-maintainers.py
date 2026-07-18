@@ -100,7 +100,7 @@ def main(evals):
                 teams = v.get("teams", [])
                 for t in teams:
                     if "shortName" in t:
-                        maintainers.append({"github": "team_" + t["shortName"].lower()})
+                        maintainers.append({"github": "team_" + t["shortName"].lower().replace(" ", "-")})
                 res[k] = maintainers
 
             # If batch failed completely, mark as error
@@ -115,7 +115,8 @@ def main(evals):
                 else:
                     for maint in v:
                         if "github" in maint:
-                            f.write(f"{maint['github']} {k} {' '.join(jobs_info[k])}")
+                            gh_handle = maint['github'].replace(" ", "-")
+                            f.write(f"{gh_handle} {k} {' '.join(jobs_info[k])}")
                         else:
                             f.write(f"_ {k} {' '.join(jobs_info[k])}")
 
