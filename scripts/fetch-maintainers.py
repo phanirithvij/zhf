@@ -44,7 +44,7 @@ def find_maintainer_for_job(job_name, nixos, res, job_maintainers):
     try:
         if name_without_arch not in job_maintainers.keys():
             r = subprocess.check_output(
-                f"nix eval --json -f {file_to_evaluate} '{{ maintainers = {real_job_name}.meta.maintainers or []; teams = {real_job_name}.meta.teams or []; }}' 2> /dev/null",
+                f"nix eval --json -f {file_to_evaluate} --apply 'pkg: {{ maintainers = pkg.meta.maintainers or []; teams = pkg.meta.teams or []; }}' {real_job_name} 2> /dev/null",
                 shell=True,
             ).decode("utf-8")
             r_dict = json.loads(r)
