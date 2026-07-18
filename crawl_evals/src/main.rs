@@ -151,14 +151,18 @@ async fn main() -> Result<()> {
                     for line in errors_text.lines() {
                         let line = line.trim();
                         if line.starts_with("in job ‘") && line.ends_with("’:") {
-                            let attr_name = &line["in job ‘".len()..line.len() - 2];
-                            let mut parts = attr_name.rsplitn(2, '.');
-                            let arch = parts.next().unwrap_or("unknown");
-                            if eval_nixos || allowed_arch_nixpkgs.contains(&arch) {
-                                builds.insert(
-                                    attr_name.to_string(),
-                                    format!("0 {} {} EvalFailed", attr_name, arch),
-                                );
+                            if let Some(attr_name) = line
+                                .strip_prefix("in job ‘")
+                                .and_then(|s| s.strip_suffix("’:"))
+                            {
+                                let mut parts = attr_name.rsplitn(2, '.');
+                                let arch = parts.next().unwrap_or("unknown");
+                                if eval_nixos || allowed_arch_nixpkgs.contains(&arch) {
+                                    builds.insert(
+                                        attr_name.to_string(),
+                                        format!("0 {} {} EvalFailed", attr_name, arch),
+                                    );
+                                }
                             }
                         }
                     }
