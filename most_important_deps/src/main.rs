@@ -15,7 +15,7 @@ use tokio::time::{Duration, sleep};
 use wg::AsyncWaitGroup;
 
 /// Number of parallel HTTP requests that are sent to Hydra
-const PARALLEL_REQUESTS: usize = 4;
+const PARALLEL_REQUESTS: usize = 32;
 
 #[tokio::main]
 async fn main() -> Result<()> {
