@@ -126,7 +126,7 @@ async fn main() -> Result<()> {
                 // Package name
                 let pkg_name = cols[4].text();
                 // Architecture
-                let arch = if let Some(arch) = cols[5].find(Name("tt")).next() {
+                let mut arch = if let Some(arch) = cols[5].find(Name("tt")).next() {
                     arch.text()
                 } else {
                     log::warn!("Job has no architecture: {:?}", row);
@@ -135,6 +135,11 @@ async fn main() -> Result<()> {
 
                 if attr_name == "AAAAAASomeThingsFailToEvaluate" {
                     continue;
+                }
+
+                let valid_archs = ["x86_64-linux", "aarch64-linux", "x86_64-darwin", "aarch64-darwin", "i686-linux"];
+                if !valid_archs.contains(&arch.as_str()) {
+                    arch = "unknown-system".to_string();
                 }
 
                 if eval_nixos || allowed_arch_nixpkgs.contains(&arch.as_str()) {
