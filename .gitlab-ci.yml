@@ -1,7 +1,8 @@
 pages:
   stage: deploy
   script:
-    - ln -s /var/lib/zhf data
+    - mkdir -p ~/.local/state/zhf
+    - ln -s ~/.local/state/zhf data
     - rm -rf public
     - ./scripts/render-page.sh master public
     - ./scripts/render-page.sh release-26.05 public/release-26.05

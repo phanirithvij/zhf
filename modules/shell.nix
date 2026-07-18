@@ -18,7 +18,8 @@
           name = "deploy";
           help = "Render pages for deployment";
           command = ''
-            ln -sf /var/lib/zhf data
+            mkdir -p ~/.local/state/zhf
+            ln -sf ~/.local/state/zhf data
             rm -rf public
             ./scripts/render-page.sh master public
             ./scripts/render-page.sh release-26.05 public/release-26.05
