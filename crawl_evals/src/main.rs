@@ -125,6 +125,9 @@ async fn main() -> Result<()> {
                 };
                 // Package name
                 let pkg_name = cols[4].text();
+                if pkg_name.trim().is_empty() {
+                    continue;
+                }
                 // Architecture
                 let mut arch = if let Some(arch) = cols[5].find(Name("tt")).next() {
                     arch.text()
@@ -145,7 +148,7 @@ async fn main() -> Result<()> {
                     "i686-linux",
                 ];
                 if !valid_archs.contains(&arch.as_str()) {
-                    arch = "unknown-system".to_string();
+                    continue;
                 }
 
                 if eval_nixos || allowed_arch_nixpkgs.contains(&arch.as_str()) {
@@ -183,7 +186,7 @@ async fn main() -> Result<()> {
                                     "i686-linux",
                                 ];
                                 if !valid_archs.contains(&arch) {
-                                    arch = "unknown-system";
+                                    continue;
                                 }
                                 if eval_nixos || allowed_arch_nixpkgs.contains(&arch) {
                                     builds.insert(
