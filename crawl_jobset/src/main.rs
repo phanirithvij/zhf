@@ -1,9 +1,9 @@
 //! Crawl some data about the latest finished evaluation from the Hydra web interface directly.
 //! We need to do this because the API doesn't offer this data.
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use reqwest_middleware::ClientBuilder;
-use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
+use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
 use select::predicate::{Class, Name};
 
 #[tokio::main(worker_threads = 4)]

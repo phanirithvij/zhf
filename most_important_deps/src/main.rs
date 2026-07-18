@@ -1,8 +1,8 @@
 //! Find the failed dependency storepath basenames of a build
 
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use reqwest_middleware::{ClientBuilder, ClientWithMiddleware};
-use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
+use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
 use select::node::Node;
 use select::predicate::{And, Attr, Class, Name, Predicate};
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ use std::sync::Arc;
 use tokio::fs::File;
 use tokio::io::AsyncWriteExt;
 use tokio::sync::{Mutex, Semaphore};
-use tokio::time::{sleep, Duration};
+use tokio::time::{Duration, sleep};
 use wg::AsyncWaitGroup;
 
 /// Number of parallel HTTP requests that are sent to Hydra

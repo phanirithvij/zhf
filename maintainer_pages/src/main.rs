@@ -1,7 +1,7 @@
 //! Renders the per-maintainer pages and overviews
 use anyhow::Result;
 use std::collections::HashMap;
-use std::fs::{create_dir_all, read_to_string, File};
+use std::fs::{File, create_dir_all, read_to_string};
 use std::io::Write as _;
 
 struct Build {

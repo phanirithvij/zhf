@@ -2,11 +2,11 @@
 
 use anyhow::Result;
 use reqwest_middleware::ClientBuilder;
-use reqwest_retry::{policies::ExponentialBackoff, RetryTransientMiddleware};
+use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
 use select::node::Node;
 use select::predicate::Name;
 use std::collections::HashMap;
-use std::fs::{create_dir_all, File};
+use std::fs::{File, create_dir_all};
 use std::io::Write as _;
 
 #[tokio::main(worker_threads = 4)]
