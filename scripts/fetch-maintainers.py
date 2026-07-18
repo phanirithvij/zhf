@@ -1,18 +1,16 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p python3 python3.pkgs.multiprocess python3.pkgs.gitpython
-
-
+#!/usr/bin/env python3
+import json
 import os
 import git
-from multiprocessing import Pool, Manager
 import subprocess
-import json
 import sys
+from pathlib import Path
 
 
 def clone_nixpkgs(rev, nixos):
     owd = os.getcwd()
-    os.system("mkdir -p data/nixpkgs")
+    if not os.path.exists("data/nixpkgs"):
+        os.makedirs("data/nixpkgs")
     os.chdir("data/nixpkgs")
     repo = git.Repo.init()
     try:
@@ -32,66 +30,86 @@ def clone_nixpkgs(rev, nixos):
     os.chdir(owd)
 
 
-def find_maintainer_for_job(job_name, nixos, res, job_maintainers):
-    name_without_arch = ".".join(job_name.split(".")[:-1])
-    real_job_name = job_name
-    if not nixos:
-        real_job_name = ".".join(real_job_name.split(".")[1:])
-    if nixos:
-        file_to_evaluate = "./data/nixpkgs/nixos/release-combined.nix"
-    else:
-        file_to_evaluate = "./data/nixpkgs/pkgs/top-level/release.nix"
+def batch_evaluate(jobs, is_nixos):
+    file_to_evaluate = "./data/nixpkgs/nixos/release-combined.nix" if is_nixos else "./data/nixpkgs/pkgs/top-level/release.nix"
+    expr = f"let jobs = import {file_to_evaluate}; in {{\n"
+    for job_name in jobs:
+        real_job_name = job_name if is_nixos else ".".join(job_name.split(".")[1:])
+        path_expr = ".".join(f'"{p}"' for p in real_job_name.split("."))
+        expr += f'  "{job_name}" = let m = builtins.tryEval (jobs.{path_expr}.meta or {{}}); in if m.success then {{ maintainers = m.value.maintainers or []; teams = m.value.teams or []; }} else {{ maintainers = []; teams = []; }};\n'
+    expr += "}\n"
+    with open("batch.nix", "w") as f:
+        f.write(expr)
     try:
-        if name_without_arch not in job_maintainers.keys():
-            r = subprocess.check_output(
-                f"nix eval --json -f {file_to_evaluate} --apply 'pkg: {{ maintainers = pkg.meta.maintainers or []; teams = pkg.meta.teams or []; }}' {real_job_name} 2> /dev/null",
-                shell=True,
-            ).decode("utf-8")
-            r_dict = json.loads(r)
-            maintainers = r_dict.get("maintainers", [])
-            teams = r_dict.get("teams", [])
-            for t in teams:
-                if "shortName" in t:
-                    maintainers.append({"github": "team_" + t["shortName"].lower()})
-            job_maintainers[name_without_arch] = maintainers
-            res[job_name] = maintainers
-        else:
-            res[job_name] = job_maintainers[name_without_arch]
-
-    except Exception as _:
-        res[job_name] = ["error"]
+        r = subprocess.check_output("nix eval --json -f batch.nix 2> /dev/null", shell=True).decode("utf-8")
+        return json.loads(r)
+    except Exception as e:
+        print(f"Batch evaluation failed: {e}")
+        return {}
 
 
 def main(evals):
-    with Manager() as mgr:
-        for ev in evals:
-            res = mgr.dict({})
-            job_maintainers = mgr.dict({})
+    for ev in evals:
+        eval_id, commit_hash, is_nixos = ev
+        
+        # Determine paths
+        evalcache_path = f"data/evalcache/{eval_id}.cache"
+        maintainerscache_path = f"data/maintainerscache/{eval_id}.cache"
+        
+        if not os.path.exists(evalcache_path):
+            continue
 
-            clone_nixpkgs(ev[1], ev[2])
-            f = open(f"data/evalcache/{ev[0]}.cache")
-            jobs = []
-            jobs_info = {}
+        if os.path.exists(maintainerscache_path):
+            print(f"Maintainers for evaluation {eval_id} are already cached")
+            continue
+
+        clone_nixpkgs(commit_hash, is_nixos)
+        
+        jobs_info = {}
+        with open(evalcache_path) as f:
             for line in f.readlines():
                 status = line.split(" ")
                 if "failed" in status[-1].strip().lower():
                     job_name = status[0].strip()
-                    if not ev[2]:
+                    if not is_nixos:
                         job_name = f"nixpkgs.{job_name}"
-                    jobs.append((job_name, ev[2], res, job_maintainers))
                     jobs_info[job_name] = status[1:]
-            with Pool() as p:
-                p.starmap(find_maintainer_for_job, jobs)
+        
+        jobs_to_eval = list(jobs_info.keys())
+        if not jobs_to_eval:
+            Path(maintainerscache_path).touch()
+            continue
 
-            f = open(f"data/maintainerscache/{ev[0]}.cache", "a")
+        res = {}
+        # Batch in chunks of 500
+        chunk_size = 500
+        for i in range(0, len(jobs_to_eval), chunk_size):
+            chunk = jobs_to_eval[i:i+chunk_size]
+            print(f"Evaluating batch {i//chunk_size + 1}/{(len(jobs_to_eval) + chunk_size - 1)//chunk_size}...")
+            batch_res = batch_evaluate(chunk, is_nixos)
+            for k, v in batch_res.items():
+                maintainers = v.get("maintainers", [])
+                teams = v.get("teams", [])
+                for t in teams:
+                    if "shortName" in t:
+                        maintainers.append({"github": "team_" + t["shortName"].lower()})
+                res[k] = maintainers
+            
+            # If batch failed completely, mark as error
+            if not batch_res:
+                for k in chunk:
+                    res[k] = ["error"]
+
+        with open(maintainerscache_path, "a") as f:
             for k, v in res.items():
-                if v == []:
+                if not v or v == ["error"]:
                     f.write(f"_ {k} {' '.join(jobs_info[k])}")
-                for maint in v:
-                    if maint != "error" and "github" in maint:
-                        f.write(f"{maint['github']} {k} {' '.join(jobs_info[k])}")
-                    else:
-                        f.write(f"_ {k} {' '.join(jobs_info[k])}")
+                else:
+                    for maint in v:
+                        if "github" in maint:
+                            f.write(f"{maint['github']} {k} {' '.join(jobs_info[k])}")
+                        else:
+                            f.write(f"_ {k} {' '.join(jobs_info[k])}")
 
 
 if __name__ == "__main__":
