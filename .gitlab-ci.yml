@@ -2,7 +2,9 @@ pages:
   stage: deploy
   script:
     - ln -s /var/lib/zhf data
-    - ./scripts/render-page.sh
+    - rm -rf public
+    - ./scripts/render-page.sh master public
+    - ./scripts/render-page.sh release-26.05 public/release-26.05
   interruptible: true
   artifacts:
     paths:

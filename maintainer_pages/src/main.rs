@@ -27,8 +27,9 @@ fn main() -> Result<()> {
     data_dir.push("data");
     let mut maintainers_cache = data_dir.clone();
     maintainers_cache.push("maintainerscache");
+    let out_dir_env = std::env::var("OUT_DIR").unwrap_or_else(|_| "public".to_string());
     let mut out_dir = std::env::current_dir()?;
-    out_dir.push("public");
+    out_dir.push(out_dir_env.clone());
     out_dir.push("failed");
     out_dir.push("by-maintainer");
     create_dir_all(&out_dir)?;
@@ -167,7 +168,7 @@ fn main() -> Result<()> {
     let mut maintainer_names: Vec<_> = maintainers.keys().collect();
     maintainer_names.sort();
     let mut failed_dir = std::env::current_dir()?;
-    failed_dir.push("public");
+    failed_dir.push(out_dir_env.clone());
     failed_dir.push("failed");
     let mut out = failed_dir.clone();
     out.push("overview.html");

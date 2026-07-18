@@ -4,8 +4,6 @@ set -euo pipefail
 
 cd "$(dirname "$(dirname "$(readlink -f "${0}")")")" || exit 122
 
-rm -rf public
-mkdir -p public
 if ! [[ -d data ]]; then
     mkdir -p data
 fi
@@ -17,7 +15,9 @@ runRust() {
 }
 
 # Gather data
-targetBranch=master
+targetBranch="${1:-master}"
+outputDir="${2:-public}"
+mkdir -p "${outputDir}"
 case "${targetBranch}" in
 release-*)
     nixosJobset="${targetBranch}"
@@ -209,7 +209,7 @@ while IFS=' ' read -r hash date; do
 done <data/staging-history
 
 echo "Rendering maintainer pages..."
-runRust maintainer_pages "${evalIds[@]}"
+OUT_DIR="${outputDir}" runRust maintainer_pages "${evalIds[@]}"
 
 echo "Finding most important dependencies..."
 runRust most_important_deps "${evalIds[@]}"
@@ -225,7 +225,7 @@ while IFS=' ' read -r count parts; do
 done <<<"${lines}"
 
 # Render page
-cp -r page/* public/
+cp -r page/* "${outputDir}/"
 sed -i \
     -e "s/@targetbranch@/${targetBranch}/g" \
     -e "s/@lastlinuxevalno@/${lastLinuxEvalNo}/g" \
@@ -233,19 +233,19 @@ sed -i \
     -e "s/@lastdarwinevalno@/${lastDarwinEvalNo}/g" \
     -e "s/@lastdarwinevaltime@/${lastDarwinEvalTime}/g" \
     -e "s/@totalbuildfailures@/${totalBuildFailures}/g" \
-    -e "s@failingbuildstable@${failingBuildsTable}g" \
+    -e "s @failingbuildstable@ ${failingBuildsTable} g" \
     -e "s/@linuxburndown@/${linuxBurndown}/g" \
     -e "s/@darwinburndown@/${darwinBurndown}/g" \
     -e "s/@lastcheck@/${lastCheck}/g" \
     -e "s/@triggered@/${triggeredBy}/g" \
-    public/index.html
+    "${outputDir}/index.html"
 
 echo "${stagingMerges}" | sed -i -e '/@stagingMerges@/{
 r /dev/stdin
 d
-}' public/index.html
+}' "${outputDir}/index.html"
 
 echo "${mostProblematicDeps}" | sed -i -e '/@mostproblematicdeps@/{
 r /dev/stdin
 d
-}' public/index.html
+}' "${outputDir}/index.html"
