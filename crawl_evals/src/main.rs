@@ -137,7 +137,13 @@ async fn main() -> Result<()> {
                     continue;
                 }
 
-                let valid_archs = ["x86_64-linux", "aarch64-linux", "x86_64-darwin", "aarch64-darwin", "i686-linux"];
+                let valid_archs = [
+                    "x86_64-linux",
+                    "aarch64-linux",
+                    "x86_64-darwin",
+                    "aarch64-darwin",
+                    "i686-linux",
+                ];
                 if !valid_archs.contains(&arch.as_str()) {
                     arch = "unknown-system".to_string();
                 }
@@ -169,7 +175,13 @@ async fn main() -> Result<()> {
                                 }
                                 let mut parts = attr_name.rsplitn(2, '.');
                                 let mut arch = parts.next().unwrap_or("unknown");
-                                let valid_archs = ["x86_64-linux", "aarch64-linux", "x86_64-darwin", "aarch64-darwin", "i686-linux"];
+                                let valid_archs = [
+                                    "x86_64-linux",
+                                    "aarch64-linux",
+                                    "x86_64-darwin",
+                                    "aarch64-darwin",
+                                    "i686-linux",
+                                ];
                                 if !valid_archs.contains(&arch) {
                                     arch = "unknown-system";
                                 }
