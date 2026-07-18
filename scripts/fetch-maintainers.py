@@ -6,7 +6,7 @@ import os
 import git
 from multiprocessing import Pool, Manager
 import subprocess
-import ast
+import json
 import sys
 
 
@@ -43,14 +43,18 @@ def find_maintainer_for_job(job_name, nixos, res, job_maintainers):
         file_to_evaluate = "./data/nixpkgs/pkgs/top-level/release.nix"
     try:
         if name_without_arch not in job_maintainers.keys():
-            r = ast.literal_eval(
-                subprocess.check_output(
-                    f"nix eval --json -f {file_to_evaluate} {real_job_name}.meta.maintainers 2> /dev/null",
-                    shell=True,
-                ).decode("utf-8")
-            )
-            job_maintainers[name_without_arch] = r
-            res[job_name] = r
+            r = subprocess.check_output(
+                f"nix eval --json -f {file_to_evaluate} '{{ maintainers = {real_job_name}.meta.maintainers or []; teams = {real_job_name}.meta.teams or []; }}' 2> /dev/null",
+                shell=True,
+            ).decode("utf-8")
+            r_dict = json.loads(r)
+            maintainers = r_dict.get("maintainers", [])
+            teams = r_dict.get("teams", [])
+            for t in teams:
+                if "shortName" in t:
+                    maintainers.append({"github": "team_" + t["shortName"].lower()})
+            job_maintainers[name_without_arch] = maintainers
+            res[job_name] = maintainers
         else:
             res[job_name] = job_maintainers[name_without_arch]
 
